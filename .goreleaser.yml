@@ -1,0 +1,46 @@
+version: 2
+
+project_name: dtchat
+
+builds:
+  - id: dtchat
+    main: ./main.go
+    binary: dtchat
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - windows
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+      - '386'
+    ignore:
+      - goos: darwin
+        goarch: '386'
+      - goos: windows
+        goarch: arm64
+    ldflags:
+      - -s -w
+    flags:
+      - -trimpath
+
+archives:
+  - format: binary
+    name_template: "{{ .ProjectName }}-{{ .Os }}-{{ .Arch }}"
+
+checksum:
+  name_template: 'checksums.txt'
+
+release:
+  draft: false
+  prerelease: auto
+
+changelog:
+  sort: desc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"

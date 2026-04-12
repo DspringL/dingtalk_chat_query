@@ -1,0 +1,18 @@
+# 编译产物
+dtchat
+dtchat.exe
+releases/
+dist/
+
+# IDE / 编辑器
+.vscode/
+.idea/
+.claude/
+
+# macOS
+.DS_Store
+
+# 测试临时文件
+*.db
+*.db-shm
+*.db-wal

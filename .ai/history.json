@@ -1,0 +1,53 @@
+[
+  {
+    "id": "a3f8c2d1-9b4e-4f7a-8c6d-2e1b5a9f3c7d",
+    "question": "实现一个跨平台 CLI 工具，读取钉钉聊天记录，参考 dingwave-main 源码，当前 macOS 已安装钉钉客户端",
+    "plan": "基于 dingwave-main 的解密和数据库迁移逻辑，在 dingtalk_chat_database 项目中创建纯 CLI 工具（无 Web UI），使用 Go + Cobra，支持自动发现数据库、解密、列出会话、读取消息、搜索、导出",
+    "created_at": "2026-04-12T19:40:00",
+    "completed_at": "2026-04-12T19:55:00",
+    "ref_file_list": [
+      "dingwave-main/server/internal/crypto/decrypt.go",
+      "dingwave-main/server/internal/database/database.go",
+      "dingwave-main/server/internal/database/model.go",
+      "dingwave-main/server/internal/database/util.go",
+      "dingwave-main/server/main.go"
+    ],
+    "change_list": [
+      { "file": "dingtalk_chat_database/main.go", "change": "CLI 入口", "status": "add" },
+      { "file": "dingtalk_chat_database/go.mod", "change": "Go 模块定义", "status": "add" },
+      { "file": "dingtalk_chat_database/build.sh", "change": "多平台构建脚本", "status": "add" },
+      { "file": "dingtalk_chat_database/README.md", "change": "使用文档", "status": "modify" },
+      { "file": "dingtalk_chat_database/internal/crypto/decrypt.go", "change": "AES-ECB 解密逻辑", "status": "add" },
+      { "file": "dingtalk_chat_database/internal/database/model.go", "change": "数据模型定义", "status": "add" },
+      { "file": "dingtalk_chat_database/internal/database/util.go", "change": "消息内容解析工具函数", "status": "add" },
+      { "file": "dingtalk_chat_database/internal/database/database.go", "change": "数据库迁移到内存逻辑", "status": "add" },
+      { "file": "dingtalk_chat_database/internal/finder/finder.go", "change": "跨平台自动发现钉钉数据库路径", "status": "add" },
+      { "file": "dingtalk_chat_database/internal/cmd/root.go", "change": "Cobra 根命令", "status": "add" },
+      { "file": "dingtalk_chat_database/internal/cmd/loader.go", "change": "数据库加载逻辑（自动发现+解密）", "status": "add" },
+      { "file": "dingtalk_chat_database/internal/cmd/info.go", "change": "info 子命令", "status": "add" },
+      { "file": "dingtalk_chat_database/internal/cmd/list.go", "change": "list 子命令", "status": "add" },
+      { "file": "dingtalk_chat_database/internal/cmd/messages.go", "change": "messages 子命令", "status": "add" },
+      { "file": "dingtalk_chat_database/internal/cmd/search.go", "change": "search 子命令", "status": "add" },
+      { "file": "dingtalk_chat_database/internal/cmd/export.go", "change": "export 子命令", "status": "add" }
+    ]
+  },
+  {
+    "id": "b7e2a4f9-3c1d-4e8b-a5f6-9d0c2b7e4a1f",
+    "question": "写一份 Go 语言版的单元测试，演示各种函数的调用，打印调用结果",
+    "plan": "为 crypto、database、finder 三个包分别编写单元测试文件，覆盖 GenerateKey、DecryptDatabase、ParseCID、GetOtherUserID、FindMostFrequentID、ExtractContentText、MessageContentType.String、parseUserDir、FindDingTalkDBs 等函数，每个测试用例打印调用结果",
+    "created_at": "2026-04-12T20:00:00",
+    "completed_at": "2026-04-12T20:10:00",
+    "ref_file_list": [
+      "dingtalk_chat_query/internal/crypto/decrypt.go",
+      "dingtalk_chat_query/internal/database/database.go",
+      "dingtalk_chat_query/internal/database/model.go",
+      "dingtalk_chat_query/internal/database/util.go",
+      "dingtalk_chat_query/internal/finder/finder.go"
+    ],
+    "change_list": [
+      { "file": "dingtalk_chat_query/internal/crypto/decrypt_test.go", "change": "新增 crypto 包单元测试，覆盖密钥生成、幂等性、唯一性、文件不存在错误处理", "status": "add" },
+      { "file": "dingtalk_chat_query/internal/database/util_test.go", "change": "新增 database 包单元测试，覆盖 CID 解析、用户 ID 推断、消息文本提取、消息类型枚举", "status": "add" },
+      { "file": "dingtalk_chat_query/internal/finder/finder_test.go", "change": "新增 finder 包单元测试，覆盖目录名解析、数据库自动发现、结构体字段读写", "status": "add" }
+    ]
+  }
+]
