@@ -72,6 +72,9 @@ func loadDB() (*gorm.DB, error) {
 func resolveDBPath() (dbPath, userID string, err error) {
 	// 优先使用命令行指定的路径
 	if flagDBPath != "" {
+		if _, err := os.Stat(flagDBPath); err != nil {
+			return "", "", fmt.Errorf("数据库文件不存在: %s", flagDBPath)
+		}
 		dbPath = flagDBPath
 		userID = flagUserID
 		return

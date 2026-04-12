@@ -25,9 +25,19 @@ flagJSON  bool
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			keyword := args[0]
+			if strings.TrimSpace(keyword) == "" {
+				return fmt.Errorf("搜索关键词不能为空")
+			}
 			db, err := loadDB()
 			if err != nil {
 				return err
+			}
+			// 如果指定了 CID，先验证会话是否存在
+			if flagCID != "" {
+				var conv database.Conversation
+				if err := db.Where("cid = ?", flagCID).First(&conv).Error; err != nil {
+					return fmt.Errorf("找不到会话 %q，请用 dtchat list 确认 CID", flagCID)
+				}
 			}
 			query := db.Model(&database.Message{}).
 				Where("content_text LIKE ?", "%"+keyword+"%").

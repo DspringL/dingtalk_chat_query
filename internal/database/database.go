@@ -4,6 +4,7 @@ package database
 import (
 	"database/sql"
 	"fmt"
+	"os"
 
 	"github.com/glebarez/sqlite"
 	"gorm.io/gorm"
@@ -36,10 +37,12 @@ func MigrateToMemory(dbPath string) (*gorm.DB, error) {
 		return nil, fmt.Errorf("更新消息文本失败: %w", err)
 	}
 	if err := updateSingleChatTitles(memDB); err != nil {
-		return nil, fmt.Errorf("更新单聊标题失败: %w", err)
+		// 单聊标题更新失败不影响主流程，仅记录
+		fmt.Fprintf(os.Stderr, "[警告] 更新单聊标题失败: %v\n", err)
 	}
 	if err := saveCurrentUser(memDB); err != nil {
-		return nil, fmt.Errorf("保存当前用户失败: %w", err)
+		// 当前用户保存失败不影响主流程（可能是纯群聊账号）
+		fmt.Fprintf(os.Stderr, "[警告] 保存当前用户失败: %v\n", err)
 	}
 	if err := updateConversationStats(memDB); err != nil {
 		return nil, fmt.Errorf("更新会话统计失败: %w", err)
@@ -141,6 +144,9 @@ func migrateMessages(srcDB *sql.DB, destDB *gorm.DB) error {
 			return err
 		}
 		tableNames = append(tableNames, t)
+	}
+	if err := rows.Err(); err != nil {
+		return fmt.Errorf("读取消息表列表失败: %w", err)
 	}
 
 	const batchSize = 1000
@@ -249,6 +255,10 @@ func saveCurrentUser(db *gorm.DB) error {
 	currentUserID, err := GetCurrentUserID(db)
 	if err != nil {
 		return err
+	}
+	if currentUserID == 0 {
+		// 没有单聊记录，无法推断当前用户，跳过
+		return nil
 	}
 	var user User
 	if err := db.First(&user, currentUserID).Error; err != nil {

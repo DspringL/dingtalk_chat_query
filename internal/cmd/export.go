@@ -31,11 +31,14 @@ flagOutput string
 			}
 			var conv database.Conversation
 			if err := db.Where("cid = ?", cid).First(&conv).Error; err != nil {
-				return fmt.Errorf("会话不存在: %s", cid)
+				return fmt.Errorf("找不到会话 %q，请用 dtchat list 确认 CID", cid)
 			}
 			var messages []database.Message
 			if err := db.Where("cid = ?", cid).Order("created_at ASC").Find(&messages).Error; err != nil {
 				return fmt.Errorf("查询消息失败: %w", err)
+			}
+			if len(messages) == 0 {
+				fmt.Fprintf(os.Stderr, "[提示] 会话 %q 暂无消息记录\n", conv.Title)
 			}
 			fillSenderNames(db, messages)
 			out := os.Stdout

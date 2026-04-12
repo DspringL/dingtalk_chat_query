@@ -46,6 +46,7 @@ func DecryptDatabase(inputPath, outputPath string, key []byte) error {
 			break
 		}
 		if err != nil {
+			_ = os.Remove(outputPath) // 读取失败，清理不完整的输出文件
 			return fmt.Errorf("读取输入文件失败: %w", err)
 		}
 
@@ -54,6 +55,7 @@ func DecryptDatabase(inputPath, outputPath string, key []byte) error {
 		}
 
 		if _, err := outFile.Write(buf[:n]); err != nil {
+			_ = os.Remove(outputPath) // 写入失败，清理不完整的输出文件
 			return fmt.Errorf("写入输出文件失败: %w", err)
 		}
 	}

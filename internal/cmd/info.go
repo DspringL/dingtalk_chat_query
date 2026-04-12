@@ -25,12 +25,17 @@ func newInfoCmd() *cobra.Command {
 
 			var currentUser database.CurrentUser
 			if err := db.First(&currentUser).Error; err != nil {
-				return fmt.Errorf("获取用户信息失败: %w", err)
+				// 可能是纯群聊账号，无法推断当前用户，给出友好提示
+				fmt.Fprintln(os.Stderr, "[提示] 无法识别当前用户（可能账号只有群聊记录），部分信息将为空")
 			}
 
 			var totalConv, totalMsg int64
-			db.Model(&database.Conversation{}).Count(&totalConv)
-			db.Model(&database.Message{}).Count(&totalMsg)
+			if err := db.Model(&database.Conversation{}).Count(&totalConv).Error; err != nil {
+				totalConv = -1
+			}
+			if err := db.Model(&database.Message{}).Count(&totalMsg).Error; err != nil {
+				totalMsg = -1
+			}
 
 			if flagJSON {
 				out := map[string]any{

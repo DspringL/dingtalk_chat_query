@@ -32,7 +32,7 @@ flagJSON   bool
 			}
 			var conv database.Conversation
 			if err := db.Where("cid = ?", cid).First(&conv).Error; err != nil {
-				return fmt.Errorf("会话不存在: %s", cid)
+				return fmt.Errorf("找不到会话 %q，请用 dtchat list 确认 CID", cid)
 			}
 			query := db.Where("cid = ?", cid).Order("created_at DESC")
 			if flagBefore > 0 {
@@ -94,6 +94,9 @@ func printMessage(msg database.Message) {
 
 // fillSenderNames 批量填充消息发送者昵称（供多个子命令复用）
 func fillSenderNames(db *gorm.DB, messages []database.Message) {
+	if len(messages) == 0 {
+		return
+	}
 	idSet := make(map[int64]struct{})
 	for _, m := range messages {
 		idSet[m.SenderID] = struct{}{}
@@ -103,7 +106,9 @@ func fillSenderNames(db *gorm.DB, messages []database.Message) {
 		ids = append(ids, id)
 	}
 	var users []database.User
-	db.Where("id IN ?", ids).Find(&users)
+	if err := db.Where("id IN ?", ids).Find(&users).Error; err != nil {
+		return // 查不到昵称时降级显示用户 ID，不崩溃
+	}
 	userMap := make(map[int64]string, len(users))
 	for _, u := range users {
 		userMap[u.ID] = u.Nickname
