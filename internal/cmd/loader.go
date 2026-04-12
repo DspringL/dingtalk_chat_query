@@ -48,10 +48,7 @@ func loadDB() (*gorm.DB, error) {
 
 		finalPath = tmpPath
 		// 注册清理函数（进程退出时删除临时文件）
-		defer func() {
-			// 注意：这里不能 defer os.Remove，因为 db 还在使用中
-			// 临时文件会在进程退出时由 OS 清理，或在 main 中处理
-		}()
+
 	}
 
 	if flagVerbose {

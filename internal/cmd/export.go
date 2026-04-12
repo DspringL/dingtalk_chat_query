@@ -4,6 +4,7 @@ package cmd
 import (
 "encoding/json"
 "fmt"
+"io"
 "os"
 "time"
 
@@ -62,7 +63,7 @@ flagOutput string
 	return cmd
 }
 
-func exportJSON(out *os.File, conv database.Conversation, messages []database.Message) error {
+func exportJSON(out io.Writer, conv database.Conversation, messages []database.Message) error {
 	type ExportData struct {
 		Conversation database.Conversation `json:"conversation"`
 		Messages     []database.Message    `json:"messages"`
@@ -78,7 +79,7 @@ func exportJSON(out *os.File, conv database.Conversation, messages []database.Me
 	return enc.Encode(data)
 }
 
-func exportText(out *os.File, conv database.Conversation, messages []database.Message) error {
+func exportText(out io.Writer, conv database.Conversation, messages []database.Message) error {
 	convType := "群聊"
 	if conv.Type == database.ConversationTypeSingle {
 		convType = "单聊"

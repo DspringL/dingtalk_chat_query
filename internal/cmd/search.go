@@ -105,5 +105,7 @@ func highlightKeyword(text, keyword string) string {
 	if idx < 0 {
 		return text
 	}
-	return text[:idx] + "\033[1m" + text[idx:idx+len(keyword)] + "\033[0m" + text[idx+len(keyword):]
+	// 使用 lower 中匹配段的长度，避免大小写转换后字节数不一致导致截取错位
+	matchLen := len(lowerKw)
+	return text[:idx] + "\033[1m" + text[idx:idx+matchLen] + "\033[0m" + text[idx+matchLen:]
 }
