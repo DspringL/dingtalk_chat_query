@@ -11,9 +11,10 @@ import (
 
 // DBLocation 钉钉数据库位置信息
 type DBLocation struct {
-	UserID  string // 用户 UID
-	DBPath  string // 数据库文件路径
-	Version string // 版本目录名（如 v2）
+	UserID         string // 用户 UID
+	DBPath         string // 数据库文件路径
+	Version        string // 版本目录名（如 v2、v3）
+	UserConfigPath string // v3 专用：user_config 文件路径（为空则表示 v2）
 }
 
 // FindDingTalkDBs 自动发现本机所有钉钉数据库
@@ -91,11 +92,19 @@ func scanUserDirs(baseDir string) ([]DBLocation, error) {
 
 		dbPath := filepath.Join(baseDir, dirName, "DBFiles", "dingtalk.db")
 		if _, err := os.Stat(dbPath); err == nil {
-			results = append(results, DBLocation{
+			loc := DBLocation{
 				UserID:  uid,
 				DBPath:  dbPath,
 				Version: version,
-			})
+			}
+			// v3 版本：查找 user_config 文件
+			if version == "v3" {
+				userConfigPath := filepath.Join(baseDir, dirName, "user_config")
+				if _, err := os.Stat(userConfigPath); err == nil {
+					loc.UserConfigPath = userConfigPath
+				}
+			}
+			results = append(results, loc)
 		}
 	}
 

@@ -11,9 +11,11 @@ import (
 
 var (
 	// 全局标志
-	flagDBPath  string // 数据库路径（可选，不指定则自动发现）
-	flagUserID  string // 用户 UID（用于解密）
-	flagVerbose bool   // 详细输出
+	flagDBPath         string // 数据库路径（可选，不指定则自动发现）
+	flagUserID         string // 用户 UID（用于解密）
+	flagVersion        string // 数据库版本（v2/v3，不指定则自动检测）
+	flagUserConfigPath string // v3 user_config 文件路径（不指定则自动发现）
+	flagVerbose        bool   // 详细输出
 
 	// 全局数据库实例（由 PersistentPreRunE 初始化）
 	globalDB *gorm.DB
@@ -26,16 +28,22 @@ var rootCmd = &cobra.Command{
 	Long: `dtchat - 钉钉聊天记录 CLI 工具
 
 自动发现并读取本机钉钉客户端的聊天记录数据库，
-支持查看会话列表、读取消息、搜索内容和导出数据。
+支持 v2 和 v3 版本，支持查看会话列表、读取消息、搜索内容和导出数据。
 
 示例:
-  dtchat info                        # 查看当前用户信息
+  dtchat info                        # 查看当前用户信息（自动检测版本）
   dtchat list                        # 列出所有会话
   dtchat list --type single          # 只列出单聊
   dtchat messages <cid>              # 读取指定会话消息
   dtchat search <关键词>              # 全局搜索消息
   dtchat export <cid>                # 导出会话为 JSON
-  dtchat export <cid> --format text  # 导出会话为纯文本`,
+  dtchat export <cid> --format text  # 导出会话为纯文本
+
+手动指定路径（v2）:
+  dtchat -d /path/to/dingtalk.db -k 505256109 list
+
+手动指定路径（v3）:
+  dtchat -d /path/to/dingtalk.db -k 505256109 --version v3 --user-config /path/to/user_config list`,
 }
 
 // Execute 执行根命令
@@ -49,6 +57,8 @@ func Execute() {
 func init() {
 	rootCmd.PersistentFlags().StringVarP(&flagDBPath, "db", "d", "", "钉钉数据库路径（不指定则自动发现）")
 	rootCmd.PersistentFlags().StringVarP(&flagUserID, "key", "k", "", "用户 UID（加密数据库解密密钥）")
+	rootCmd.PersistentFlags().StringVar(&flagVersion, "version", "", "数据库版本: v2 或 v3（不指定则自动检测）")
+	rootCmd.PersistentFlags().StringVar(&flagUserConfigPath, "user-config", "", "v3 user_config 文件路径（不指定则自动发现）")
 	rootCmd.PersistentFlags().BoolVarP(&flagVerbose, "verbose", "v", false, "显示详细日志")
 
 	rootCmd.AddCommand(
