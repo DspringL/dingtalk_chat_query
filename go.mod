@@ -1,11 +1,11 @@
 module dingtalk-cli
 
-go 1.20
+go 1.25.0
 
 require (
 	github.com/glebarez/sqlite v1.11.0
 	github.com/spf13/cobra v1.10.2
-	golang.org/x/crypto v0.13.0
+	golang.org/x/crypto v0.52.0
 	gorm.io/gorm v1.25.12
 )
 
@@ -19,8 +19,8 @@ require (
 	github.com/mattn/go-isatty v0.0.17 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	github.com/spf13/pflag v1.0.9 // indirect
-	golang.org/x/sys v0.12.0 // indirect
-	golang.org/x/text v0.20.0 // indirect
+	golang.org/x/sys v0.45.0 // indirect
+	golang.org/x/text v0.37.0 // indirect
 	modernc.org/libc v1.22.5 // indirect
 	modernc.org/mathutil v1.5.0 // indirect
 	modernc.org/memory v1.5.0 // indirect
