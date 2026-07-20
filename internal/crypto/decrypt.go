@@ -19,8 +19,10 @@ import (
 const pageSize = 4096
 
 // v3 PBKDF2 参数（通过逆向分析得出）
+// 原始调用：PKCS5_PBKDF2_HMAC_SHA1(uid_salt, len, "666DingTalk888", 8, 1000, 32, out)
+// 第四个参数 8 是 saltlen，即只取 "666DingTalk888" 的前 8 字节 "666DingT"
 const (
-	v3PBKDFSalt       = "666DingTalk888"
+	v3PBKDFSalt       = "666DingT" // 原始 salt "666DingTalk888" 的前 8 字节（saltlen=8）
 	v3PBKDFIterations = 1000
 	v3PBKDFKeyLen     = 32
 )

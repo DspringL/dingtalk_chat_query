@@ -4,6 +4,7 @@ package finder
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -43,7 +44,37 @@ func findMacOS() ([]DBLocation, error) {
 		"5ZSL2CJU2T.com.dingtalk.mac", "Data", "Library",
 		"Application Support", "DingTalkMac")
 
-	return scanUserDirs(baseDir)
+	results, err := scanUserDirs(baseDir)
+	if err != nil {
+		return nil, err
+	}
+
+	// 从 macOS plist 读取真实数字 uid（DTLastUser），覆盖目录名中提取的十六进制串
+	// 钉钉加密密钥派生使用的是数字格式 uid，而非目录名前缀
+	if realUID := readDingTalkLastUser(); realUID != "" {
+		for i := range results {
+			results[i].UserID = realUID
+		}
+	}
+
+	return results, nil
+}
+
+// readDingTalkLastUser 从 macOS 用户偏好设置中读取上次登录的钉钉数字 uid
+// 对应 plist key: DTLastUser（值为整数，如 505256109）
+func readDingTalkLastUser() string {
+	out, err := exec.Command("defaults", "read", "com.alibaba.DingTalkMac", "DTLastUser").Output()
+	if err != nil {
+		return ""
+	}
+	uid := strings.TrimSpace(string(out))
+	// 验证是纯数字（防止读到非预期值）
+	for _, c := range uid {
+		if c < '0' || c > '9' {
+			return ""
+		}
+	}
+	return uid
 }
 
 // findWindows 在 Windows 上查找钉钉数据库
@@ -112,7 +143,8 @@ func scanUserDirs(baseDir string) ([]DBLocation, error) {
 }
 
 // parseUserDir 解析用户目录名，提取 UID 和版本
-// 支持格式：505256109_v2、505256109_v3 等
+// 支持格式：505256109_v2、505256109_v3、00486e20a9fd1d615052_v3 等
+// UID 部分允许纯数字或十六进制字符串（钉钉不同版本目录名格式不同）
 func parseUserDir(dirName string) (uid, version string) {
 	idx := strings.LastIndex(dirName, "_")
 	if idx < 0 {
@@ -121,9 +153,18 @@ func parseUserDir(dirName string) (uid, version string) {
 	uid = dirName[:idx]
 	version = dirName[idx+1:]
 
-	// UID 必须全为数字
+	if uid == "" {
+		return "", ""
+	}
+
+	// version 必须以 'v' 开头（如 v2、v3），避免误匹配无关目录
+	if !strings.HasPrefix(version, "v") {
+		return "", ""
+	}
+
+	// UID 允许十六进制字符（0-9 a-f A-F）
 	for _, c := range uid {
-		if c < '0' || c > '9' {
+		if !((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F')) {
 			return "", ""
 		}
 	}
